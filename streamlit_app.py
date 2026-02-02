@@ -333,93 +333,93 @@ def show_qrcode_window():
         st.rerun()
 
 # --- 咖啡赞赏弹窗 (升级版 V2.0) ---
- @st.dialog(" " + get_txt('coffee_title'), width="small")
-    def show_coffee_window():
-        st.markdown(f"""<div style="text-align:center; color:#666; margin-bottom:15px;">{get_txt('coffee_desc')}</div>""", unsafe_allow_html=True)
-        
-        # 快捷按钮
-        presets = [("☕", 1), ("🍗", 3), ("🚀", 5)]
-        def set_val(n): st.session_state.coffee_num = n
-        cols = st.columns(3, gap="small")
-        for i, (icon, num) in enumerate(presets):
-            with cols[i]:
-                if st.button(f"{icon} {num}", use_container_width=True, key=f"p_btn_{i}"): set_val(num)
-        st.write("")
+@st.dialog(" " + get_txt('coffee_title'), width="small")
+def show_coffee_window():
+    st.markdown(f"""<div style="text-align:center; color:#666; margin-bottom:15px;">{get_txt('coffee_desc')}</div>""", unsafe_allow_html=True)
+    
+    # 快捷按钮
+    presets = [("☕", 1), ("🍗", 3), ("🚀", 5)]
+    def set_val(n): st.session_state.coffee_num = n
+    cols = st.columns(3, gap="small")
+    for i, (icon, num) in enumerate(presets):
+        with cols[i]:
+            if st.button(f"{icon} {num}", use_container_width=True, key=f"p_btn_{i}"): set_val(num)
+    st.write("")
 
-        # 输入与计算
-        col_amount, col_total = st.columns([1, 1], gap="small")
-        with col_amount: 
-            cnt = st.number_input(get_txt('coffee_amount'), 1, 100, step=1, key='coffee_num')
-        
-        cny_total = cnt * 10
-        usd_total = cnt * 2
-        
-        #with col_total: 
-        #    st.markdown(f"""<div style="background:#fff1f2; border-radius:8px; padding:8px; text-align:center; color:#e11d48; font-weight:bold; font-size:1.5rem; height: 100%; display: flex; align-items: center; justify-content: center;">¥{cny_total}</div>""", unsafe_allow_html=True)
-                
-        # 4. 统一支付卡片渲染函数 (核心复用逻辑)
-        def render_pay_tab(title, amount_str, color_class, img_path, qr_data_suffix, link_url=None):
-            # 使用 st.container 并开启 border 边框
-            with st.container(border=True):
-                # 卡片头部 (包含支付名称和金额)
+    # 输入与计算
+    col_amount, col_total = st.columns([1, 1], gap="small")
+    with col_amount: 
+        cnt = st.number_input(get_txt('coffee_amount'), 1, 100, step=1, key='coffee_num')
+    
+    cny_total = cnt * 10
+    usd_total = cnt * 2
+    
+    #with col_total: 
+    #    st.markdown(f"""<div style="background:#fff1f2; border-radius:8px; padding:8px; text-align:center; color:#e11d48; font-weight:bold; font-size:1.5rem; height: 100%; display: flex; align-items: center; justify-content: center;">¥{cny_total}</div>""", unsafe_allow_html=True)
+            
+    # 4. 统一支付卡片渲染函数 (核心复用逻辑)
+    def render_pay_tab(title, amount_str, color_class, img_path, qr_data_suffix, link_url=None):
+        # 使用 st.container 并开启 border 边框
+        with st.container(border=True):
+            # 卡片头部 (包含支付名称和金额)
+            st.markdown(f"""
+                <div style="text-align: center; padding-bottom: 10px;">
+                    <div class="pay-label {color_class}" style="margin-bottom: 5px;">{title}</div>
+                    <div class="pay-amount-display {color_class}" style="margin: 0; font-size: 1.8rem;">{amount_str}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # 卡片中部：二维码或图片
+            # 调整列比例让图片在边框内更协调
+            c_img_1, c_img_2, c_img_3 = st.columns([1, 4, 1])
+            with c_img_2:
+                if os.path.exists(img_path): 
+                    st.image(img_path, use_container_width=True)
+                else: 
+                    # 本地图片不存在时，生成 API 二维码作为演示
+                    qr_data = f"Donate_{cny_total}_{qr_data_suffix}"
+                    # PayPal 如果是链接模式，二维码也可以指向链接
+                    if link_url: qr_data = link_url
+                    st.image(f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={qr_data}", use_container_width=True)
+            
+            # 卡片底部：按钮或提示文字
+            if link_url:
+                # PayPal 等外链跳转
+                st.write("") # 增加一点间距
+                st.link_button(f"👉 Pay {amount_str}", link_url, type="primary", use_container_width=True)
+            else:
+                # 扫码提示
                 st.markdown(f"""
-                    <div style="text-align: center; padding-bottom: 10px;">
-                        <div class="pay-label {color_class}" style="margin-bottom: 5px;">{title}</div>
-                        <div class="pay-amount-display {color_class}" style="margin: 0; font-size: 1.8rem;">{amount_str}</div>
+                    <div class="pay-instruction" style="text-align: center; padding-top: 10px;">
+                        请使用手机扫描上方二维码
                     </div>
                 """, unsafe_allow_html=True)
+    
                 
-                # 卡片中部：二维码或图片
-                # 调整列比例让图片在边框内更协调
-                c_img_1, c_img_2, c_img_3 = st.columns([1, 4, 1])
-                with c_img_2:
-                    if os.path.exists(img_path): 
-                        st.image(img_path, use_container_width=True)
-                    else: 
-                        # 本地图片不存在时，生成 API 二维码作为演示
-                        qr_data = f"Donate_{cny_total}_{qr_data_suffix}"
-                        # PayPal 如果是链接模式，二维码也可以指向链接
-                        if link_url: qr_data = link_url
-                        st.image(f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={qr_data}", use_container_width=True)
-                
-                # 卡片底部：按钮或提示文字
-                if link_url:
-                    # PayPal 等外链跳转
-                    st.write("") # 增加一点间距
-                    st.link_button(f"👉 Pay {amount_str}", link_url, type="primary", use_container_width=True)
-                else:
-                    # 扫码提示
-                    st.markdown(f"""
-                        <div class="pay-instruction" style="text-align: center; padding-top: 10px;">
-                            请使用手机扫描上方二维码
-                        </div>
-                    """, unsafe_allow_html=True)
+    # 支付方式 Tabs
+    st.write("")
+    t1, t2, t3 = st.tabs([get_txt('pay_wechat'), get_txt('pay_alipay'), get_txt('pay_paypal')])
+    
+    with t1:
+        render_pay_tab("WeChat Pay", f"¥{cny_total}", "color-wechat", "wechat_pay.jpg", "WeChat")
         
-                    
-        # 支付方式 Tabs
-        st.write("")
-        t1, t2, t3 = st.tabs([get_txt('pay_wechat'), get_txt('pay_alipay'), get_txt('pay_paypal')])
+    with t2:
+        render_pay_tab("Alipay", f"¥{cny_total}", "color-alipay", "ali_pay.jpg", "Alipay")
         
-        with t1:
-            render_pay_tab("WeChat Pay", f"¥{cny_total}", "color-wechat", "wechat_pay.jpg", "WeChat")
-            
-        with t2:
-            render_pay_tab("Alipay", f"¥{cny_total}", "color-alipay", "ali_pay.jpg", "Alipay")
-            
-        with t3:
-            # PayPal 特殊处理：使用 paypal.png (如果不存在则用API生成二维码作为占位), 并提供链接
-            # 这里的 qr_data_suffix 设为 PayPal 仅用于生成备用图
-            render_pay_tab("PayPal", f"${usd_total}", "color-paypal", "paypal.png", "PayPal", "https://paypal.me/ytqz")
-        
-        st.write("")
-        if st.button("🎉 " + get_txt('pay_success').split('!')[0], type="primary", use_container_width=True):
-            st.balloons()
-            st.success(get_txt('pay_success').format(count=cnt))
-            time.sleep(1)
-            st.rerun()
+    with t3:
+        # PayPal 特殊处理：使用 paypal.png (如果不存在则用API生成二维码作为占位), 并提供链接
+        # 这里的 qr_data_suffix 设为 PayPal 仅用于生成备用图
+        render_pay_tab("PayPal", f"${usd_total}", "color-paypal", "paypal.png", "PayPal", "https://paypal.me/ytqz")
+    
+    st.write("")
+    if st.button("🎉 " + get_txt('pay_success').split('!')[0], type="primary", use_container_width=True):
+        st.balloons()
+        st.success(get_txt('pay_success').format(count=cnt))
+        time.sleep(1)
+        st.rerun()
 
-    if st.button(get_txt('coffee_btn'), use_container_width=True):
-        show_coffee_window()
+if st.button(get_txt('coffee_btn'), use_container_width=True):
+    show_coffee_window()
 
 # ==========================================
 # 6. 主渲染逻辑
