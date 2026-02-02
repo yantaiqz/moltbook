@@ -140,7 +140,7 @@ lang_texts = {
     }
 }
 current_text = lang_texts[st.session_state.language]
-def get_txt(key): return LANG_TEXT[st.session_state.lang][key]
+def get_txt(key): return lang_texts[st.session_state.lang][key]
     
 if 'coffee_num' not in st.session_state: st.session_state.coffee_num = 1
 if 'payment_method' not in st.session_state: st.session_state.payment_method = 'wechat'
