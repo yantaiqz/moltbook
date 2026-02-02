@@ -383,8 +383,17 @@ def show_coffee_window():
     with t3:
         render_pay_tab("PayPal", f"${usd_total}", "color-paypal", "paypal.png", "PayPal", "https://paypal.me/ytqz")
     
-    # 支付成功按钮 + 提示 - 多语言
-    st.write("")
+    # 替换原有按钮代码，新增内联CSS设置黑色文字（color: #000000 !important;）
+    st.markdown("""
+    <style>
+    /* 仅匹配当前打赏成功按钮的文字颜色 */
+    div[data-testid="stButton"] > button[kind="primary"] {
+        color: #000000 !important; /* 纯黑色文字，!important强制覆盖默认样式 */
+        font-weight: 600; /* 可选：文字加粗，更醒目 */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     if st.button("🎉 " + get_txt('pay_success').split('!')[0], type="primary", use_container_width=True):
         st.balloons()
         st.success(get_txt('pay_success').format(count=cnt))
